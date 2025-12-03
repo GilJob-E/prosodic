@@ -25,7 +25,7 @@ P_prosody/
 Bash
 pip install -r requirements.txt
 
-3. FFmpeg 설치 (필수 ⭐)
+3. FFmpeg 설치 **(필수)**
 이 모듈은 미디어 변환을 위해 시스템의 FFmpeg를 직접 호출합니다. 따라서 OS에 FFmpeg가 설치되어 있고, 환경 변수(PATH)에 등록되어 있어야 합니다.
 
 Windows: ffmpeg.org에서 다운로드 후 bin 폴더를 시스템 환경 변수 Path에 추가.
