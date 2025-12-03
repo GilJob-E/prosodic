@@ -1,4 +1,4 @@
-Prosody Analysis Module (AI Interview Coach)
+# Prosody Analysis Module (AI Interview Coach)
 
 이 저장소는 면접 영상 및 음성 데이터를 분석하여 발화자의음성 특징(Prosody)을 추출하고,
 면접 역량 점수(Overall, Hiring)를 산출하는 Python 모듈입니다.
@@ -24,9 +24,11 @@ P_prosody/
 프로젝트 루트에서 다음 명령어를 실행하여 필요한 패키지를 설치합니다.
 Bash
 pip install -r requirements.txt
++ 파이썬 오디오 모듈 (audioop) 를 지원하기 위해 python 버전은 3.10.x 가 권장됩니다, 3.13버전부터는 공식적으로 audioop모듈 지원이 제거되었습니다.
 
 3. FFmpeg 설치 **(필수)**
 이 모듈은 미디어 변환을 위해 시스템의 FFmpeg를 직접 호출합니다. 따라서 OS에 FFmpeg가 설치되어 있고, 환경 변수(PATH)에 등록되어 있어야 합니다.
+
 
 Windows: ffmpeg.org에서 다운로드 후 bin 폴더를 시스템 환경 변수 Path에 추가.
 
@@ -147,6 +149,31 @@ json
 * **Z-Score Normalization:** 추출된 Raw Data를 성별 기준 분포(Mean, Std)를 이용해 표준화합니다.
 * **Weighted Scoring:** 사전에 정의된 가중치(Weights)를 각 지표에 곱하여 최종 **종합 점수(Overall)**와 **고용 추천 점수(Recommended Hiring)**를 도출합니다.
 
+
+
 ## 기반 연구
 본 모듈의 분석 로직과 가중치는 다음 논문을 기반으로 구현 및 튜닝되었습니다.
 * Naim, I., Tanveer, M. I., Gildea, D., & Hoque, M. E. (2018). **Automated Analysis and Prediction of Job Interview Performance.** IEEE Transactions on Affective Computing.
+  
+## 배경 이론 및 데이터 출처 (Background & Theory)
+
+### 1. 데이터셋 및 정규화 기준
+본 모듈의 점수 산출을 위한 기준 분포(Baseline)는 **AI Hub의 '채용 면접 데이터'**를 기반으로 구축되었습니다.
+* **샘플 규모:** 남성 1,650개 / 여성 1,750개
+* **정규화 방식:** 성별에 따른 Feature별 평균($\mu$) 및 표준편차($\sigma$)를 조사하여 Z-Score 정규화 수행.
+    * *목적:* 입력 오디오만으로는 상대적인 평가가 불가능하므로, 대규모 모집단 분포를 기준으로 '입력 음성의 수준'을 파악하기 위함.
+
+### 2. 포먼트(Formant) 분석 원리
+음성학적으로 포먼트는 성도의 공명에 의해 증폭된 특정 주파수 대역을 의미하며, 목소리의 '음색'과 '인상'을 결정짓는 중요한 요소입니다.
+* **F1 (제1 포먼트):** 입이 벌어지는 정도와 관련. 낮을수록 묵직하고 깊은 느낌(신뢰감), 높으면 가벼운 느낌.
+* **F2 (제2 포먼트):** 혀의 전후 위치와 관련. 높을수록 소리가 명료하고 또렷하게 들림(전달력).
+* **활용:** 본 모듈은 `avgBand1`(F1 대역폭)을 통해 목소리의 깊이와 안정감을, `f2meanf1` 비율 등을 통해 전달력을 간접 평가할 수 있습니다.
+* 단 F2는 상위 4개 feature에는 사용되지 않았으며 분석용 all_feature 모듈을 사용할 때 추출할 수 있습니다.
+
+### 3. 주요 평가 항목 정의
+* **Overall (종합 점수):** F1 대역폭, 멈춤 길이, 무성음 비율 등 핵심 지표를 종합하여 산출.
+* **Recommended Hiring (채용 추천):**F1 대역폭, 멈춤 길이, 무성음 비율 등 핵심 지표를 종합하여 산출.
+*  + 기반 연구의 실험에서는 면접관의 추천 점수와의 비교및 SVR분석을 통해 weight를 도출했으나 위 모듈에서는 앞선 연구에서의 weight를 correlation으로 간주하고 동일한 수치를 적용하였습니다.
+* **Excited / Engaging / Friendly:** 각 감정 상태와 높은 상관관계를 가지는 음향 특징(Pitch, Intensity 변화폭 등)을 조합하여 산출.
+
+
