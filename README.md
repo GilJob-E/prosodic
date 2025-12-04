@@ -12,10 +12,6 @@ P_prosody/
 
 ├── prosody_analysis.py             # [메인] 고속 분석 모듈 (Core 4 Features)
 
-├── prosody_analysis_all_feature.py # [연구용] 정밀 분석 모듈 (All Features)
-
-├── test.py                         # 모듈 실행 예시
-
 └── requirements.txt                # 의존성 패키지 목록
 
 🛠️ 설치 및 환경 설정 (Installation)
@@ -38,9 +34,10 @@ Linux: sudo apt install ffmpeg
 
 
 🚀 사용 방법 (Usage)
-Python
 
-# main.py 예시
+## 기본 사용법
+
+```python
 from prosody_analysis import ProsodyAnalyzerLight
 
 # 1. 분석기 초기화
@@ -48,77 +45,114 @@ analyzer = ProsodyAnalyzerLight()
 
 # 2. 파일 분석 (영상 또는 음성 파일 경로)
 input_file = "user_upload/interview.mp4"
-result = analyzer.analyze(input_file)
+success = analyzer.analyze(input_file)
 
-if result:
-
-    print(f"성별: {result['metadata']['gender']}")
-    print(f"종합 점수: {result['scores']['Overall']}")
-    print(f"고용 추천 점수: {result['scores']['RecommendedHiring']}")
+# 3. 분석 결과 조회 (프로퍼티로 접근)
+if success:
+    print(f"성별: {analyzer.gender}")
+    print(f"평균 피치: {analyzer.mean_pitch}Hz")
+    print(f"F1 대역폭: {analyzer.avg_band1}Hz")
+    print(f"평균 강도: {analyzer.intensity_mean}dB")
+    print(f"무성음 비율: {analyzer.percent_unvoiced}")
+    print(f"평균 휴지 시간: {analyzer.avg_dur_pause}s")
+    print(f"종합 점수: {analyzer.scores['Overall']}")
+    print(f"고용 추천 점수: {analyzer.scores['RecommendedHiring']}")
 else:
-
     print("분석 실패 (파일 손상 또는 FFmpeg 오류)")
+```
+
+## 시각화 (Z-Score 분포 그래프)
+
+```python
+# Figure 객체로 받기
+fig = analyzer.get_zscore_visualization()
+fig.savefig("output.png")
+
+# 또는 직접 파일로 저장
+analyzer.get_zscore_visualization(save_path="output.png")
+
+# 또는 이미지 바이트(PNG)로 받기
+img_bytes = analyzer.get_zscore_visualization(return_bytes=True)
+with open("output.png", "wb") as f:
+    f.write(img_bytes)
+```
     
 # all feature 분석이 필요한 경우
 모든 음향 지표(Shimmer, Jitter, Formant Ratio 등)가 필요한 경우 prosody_analysis_all_feature 모듈을 사용합니다.
 
-Python
-
+```python
 from prosody_analysis_all_feature import ProsodyAnalyzer
 
 analyzer = ProsodyAnalyzer()
-
 result = analyzer.analyze("interview.mp4")
-사용법은 위와 동일
+```
+
+사용법은 `ProsodyAnalyzerLight`와 동일합니다.
 
 # analyze메서드 반환형태 
 
-analyze() 함수는 다음과 같은 Dictionary 형태의 데이터를 반환합니다.
+**변경됨**: `analyze()` 메서드는 더 이상 JSON 딕셔너리를 반환하지 않습니다. 대신 분석 수행 여부(True/False)를 반환하고, 분석 결과는 **멤버변수 프로퍼티**로 제공합니다.
 
-Type : dict(Dictionary)
-json
+| 프로퍼티 | 반환형 | 설명 |
+|---------|--------|------|
+| `gender` | str | 자동 감지된 성별 ("Male" \| "Female") |
+| `mean_pitch` | float | 성별 감지 기준이 된 평균 피치 (Hz) |
+| `avg_band1` | float | F1 대역폭 (Hz) - 목소리 명료도/공명 |
+| `intensity_mean` | float | 평균 강도 (dB) |
+| `percent_unvoiced` | float | 무성음 비율 (0.0 ~ 1.0) |
+| `avg_dur_pause` | float | 평균 휴지 시간 (sec) |
+| `scores` | dict | 분석 점수 딕셔너리 {"Overall": float, "RecommendedHiring": float} |
 
-{
+```python
+# 사용 예시
+analyzer = ProsodyAnalyzerLight()
+if analyzer.analyze("audio.wav"):
+    print(analyzer.gender)
+    print(analyzer.scores)
+else:
+    print("분석 실패")
+```
 
-          "metadata": {
-          
-                    "gender": "Male",           // 자동 감지된 성별 ("Male" | "Female")
-                    
-                    "mean_pitch": 131.5         // 성별 감지 기준이 된 평균 피치 (Hz)
-                    
-          },
-          
-          "scores": {
-          
-                    "Overall": {
-                    
-                      "score": 0.85             // 종합 점수 (Z-Score 기반, 양수일수록 좋음)
-                      
-                    },
-                    
-                    "RecommendedHiring": {
-                    
-                      "score": 1.20             // 고용 추천 점수
-                      
-                    }
-            
-          },
-          
-          "raw_features": {             // [참고용] 실제 측정된 4대 핵심 지표 값
-          
-                    "mean pitch": 131.5,        // 평균 높낮이 (Hz)
-                    
-                    "avgBand1": 380.2,          // F1 대역폭 (Hz) - 목소리 명료도/공명
-                    
-                    "intensityMean": 65.4,      // 평균 성량 (dB)
-                    
-                    "percentUnvoiced": 0.45,    // 무성음 비율 (0.0 ~ 1.0) - 목소리 쉼/떨림
-                    
-                    "avgDurPause": 0.65         // 평균 휴지기 길이 (sec)
-            
-          }
-  
-}
+## 주요 메서드
+
+### 1. `analyze(file_path)` 
+음성/영상 파일을 분석하고 결과를 멤버변수에 저장합니다.
+
+**파라미터:**
+- `file_path` (str): 분석할 미디어 파일 경로
+
+**반환값:**
+- `True`: 분석 성공
+- `False`: 분석 실패
+
+**사용 예:**
+```python
+success = analyzer.analyze("interview.mp4")
+```
+
+### 2. `get_zscore_visualization(save_path=None, return_bytes=False)`
+각 feature별 Z-score를 정규분포 그래프로 시각화합니다.
+
+**파라미터:**
+- `save_path` (str, optional): 이미지 저장 경로 (PNG)
+- `return_bytes` (bool): `True`면 PNG 바이트 반환, `False`면 Figure 객체 반환
+
+**반환값:**
+- `return_bytes=False`: matplotlib `Figure` 객체
+- `return_bytes=True`: PNG 이미지 바이트
+
+**사용 예:**
+```python
+# 1. Figure 객체로 받아 표시
+fig = analyzer.get_zscore_visualization()
+plt.show()
+
+# 2. 파일로 직접 저장
+analyzer.get_zscore_visualization(save_path="chart.png")
+
+# 3. 바이트로 받아 처리 (웹 서버 등에서 활용)
+img_bytes = analyzer.get_zscore_visualization(return_bytes=True)
+```
 
 ## 분석 로직 상세 (Technical Details)
 
