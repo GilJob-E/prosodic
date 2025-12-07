@@ -62,21 +62,42 @@ if success:
 else:
     print("분석 실패 (파일 손상 또는 FFmpeg 오류)")
 ```
+## 서버측 오디오(numpy배열)input을 입력으로 할 때
 
+```python
+import numpy as np
+from prosody_analysis import ProsodyAnalyzerLight
+
+analyzer = ProsodyAnalyzerLight()
+
+# [가정] 클라이언트로부터 받은 오디오 버퍼 (bytes) -> NumPy 변환
+# server/main.py의 'full_audio' 변수와 동일한 형태
+audio_bytes = b'...' 
+audio_data = np.frombuffer(audio_bytes, dtype=np.float32)
+
+# [핵심] analyze 메서드에 파일 경로 대신 'numpy 배열'을 전달
+# sampling_rate 인자 명시 (기본값: 16000)
+success = analyzer.analyze(audio_data, sampling_rate=16000)
+
+if success:
+    hiring_score = analyzer.scores['RecommendedHiring']
+    pitch = analyzer.mean_pitch
+    print(f"[서버 로그] 분석 완료 - 점수: {hiring_score}")
+```
 ## 시각화 (Z-Score 분포 그래프)
 
 ```python
-# Figure 객체로 받기
-fig = analyzer.get_zscore_visualization()
-fig.savefig("output.png")
+# 1. 전체 4개 Feature 요약 그래프 (2x2 Grid)
+fig_all = analyzer.get_zscore_visualization()
+fig_all.savefig("summary.png")
 
-# 또는 직접 파일로 저장
-analyzer.get_zscore_visualization(save_path="output.png")
+# 2. 특정 Feature 하나만 그리기 (target_feature 지정)
+# 옵션: "avgBand1", "intensityMean", "percentUnvoiced", "avgDurPause"
+fig_single = analyzer.get_zscore_visualization(target_feature="intensityMean")
+fig_single.savefig("intensity_chart.png")
 
-# 또는 이미지 바이트(PNG)로 받기
-img_bytes = analyzer.get_zscore_visualization(return_bytes=True)
-with open("output.png", "wb") as f:
-    f.write(img_bytes)
+# 3. 이미지 바이트(PNG)로 받기 (웹 전송용)
+img_bytes = analyzer.get_zscore_visualization(target_feature="avgBand1", return_bytes=True)
 ```
     
 
@@ -106,11 +127,14 @@ else:
 
 ## 주요 메서드
 
-### 1. `analyze(file_path)` 
+### 1. `analyze(inputdata,sampling_rate=16000)` 
 음성/영상 파일을 분석하고 결과를 멤버변수에 저장합니다.
 
 **파라미터:**
-- `file_path` (str): 분석할 미디어 파일 경로
+- `input_data`
+-     (str): 분석할 미디어 파일 경로
+-     (np.ndarray): 오디오 데이터 배열(float32권장)
+- `sampling_rate` (int): input_data가 numpy 배열일 때의 샘플링 레이트 (Default: 16000)
 
 **반환값:**
 - `True`: 분석 성공
@@ -121,29 +145,17 @@ else:
 success = analyzer.analyze("interview.mp4")
 ```
 
-### 2. `get_zscore_visualization(save_path=None, return_bytes=False)`
+### 2. `get_zscore_visualization(target_feature=None, save_path=None, return_bytes=False)`
 각 feature별 Z-score를 정규분포 그래프로 시각화합니다.
 
 **파라미터:**
+- `target_feature` (str, optional): 시각화할 특정 Feature 이름. None일 경우 전체 요약 그래프 반환.
 - `save_path` (str, optional): 이미지 저장 경로 (PNG)
 - `return_bytes` (bool): `True`면 PNG 바이트 반환, `False`면 Figure 객체 반환
 
 **반환값:**
 - `return_bytes=False`: matplotlib `Figure` 객체
 - `return_bytes=True`: PNG 이미지 바이트
-
-**사용 예:**
-```python
-# 1. Figure 객체로 받아 표시
-fig = analyzer.get_zscore_visualization()
-plt.show()
-
-# 2. 파일로 직접 저장
-analyzer.get_zscore_visualization(save_path="chart.png")
-
-# 3. 바이트로 받아 처리 (웹 서버 등에서 활용)
-img_bytes = analyzer.get_zscore_visualization(return_bytes=True)
-```
 
 ## 분석 로직 상세 (Technical Details)
 
