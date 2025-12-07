@@ -79,6 +79,7 @@ with open("output.png", "wb") as f:
     f.write(img_bytes)
 ```
     
+<<<<<<< HEAD
 # all feature 분석이 필요한 경우
 모든 음향 지표(Shimmer, Jitter, Formant Ratio 등)가 필요한 경우 prosody_analysis_all_feature 모듈을 사용합니다.
 
@@ -90,6 +91,8 @@ result = analyzer.analyze("interview.mp4")
 ```
 
 사용법은 `ProsodyAnalyzerLight`와 동일합니다.
+=======
+>>>>>>> 2b3a46179dc681048728423e6b6c91364400b102
 
 # analyze메서드 반환형태 
 
@@ -97,12 +100,21 @@ result = analyzer.analyze("interview.mp4")
 
 | 프로퍼티 | 반환형 | 설명 |
 |---------|--------|------|
+<<<<<<< HEAD
 | `gender` | str | 자동 감지된 성별 ("Male" \| "Female") |
 | `mean_pitch` | float | 성별 감지 기준이 된 평균 피치 (Hz) |
 | `avg_band1` | float | F1 대역폭 (Hz) - 목소리 명료도/공명 |
 | `intensity_mean` | float | 평균 강도 (dB) |
 | `percent_unvoiced` | float | 무성음 비율 (0.0 ~ 1.0) |
 | `avg_dur_pause` | float | 평균 휴지 시간 (sec) |
+=======
+| **`avg_band1`** | float | F1 대역폭 (Hz) - 목소리 명료도/공명 |
+| **`intensity_mean`** | float | 평균 강도 (dB) |
+| **`percent_unvoiced`** | float | 무성음 비율 (0.0 ~ 1.0) |
+| **`avg_dur_pause`** | float | 평균 휴지 시간 (sec) |
+| `gender` | str | 자동 감지된 성별 ("Male" \| "Female") |
+| `mean_pitch` | float | 성별 감지 기준이 된 평균 피치 (Hz) |
+>>>>>>> 2b3a46179dc681048728423e6b6c91364400b102
 | `scores` | dict | 분석 점수 딕셔너리 {"Overall": float, "RecommendedHiring": float} |
 
 ```python
