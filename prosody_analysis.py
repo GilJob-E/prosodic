@@ -20,11 +20,11 @@ class ProsodyAnalyzerLight:
         self.weights = {
             "Overall": {
                 "avgBand1": -0.120, "intensityMean": 0.065,
-                "percentUnvoiced": -0.076, "avgDurPause": -0.090
+                "percentUnvoiced": -0.076, "avgDurPause": 0 #기존 weight는 -0.090
             },
             "RecommendedHiring": {
                 "avgBand1": -0.132, "intensityMean": 0.086,
-                "percentUnvoiced": -0.111, "avgDurPause": -0.094
+                "percentUnvoiced": -0.111, "avgDurPause": 0 #기존 weight는 -0.094
             }
         }
 
