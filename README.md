@@ -99,21 +99,6 @@ fig_single.savefig("intensity_chart.png")
 # 3. 이미지 바이트(PNG)로 받기 (웹 전송용)
 img_bytes = analyzer.get_zscore_visualization(target_feature="avgBand1", return_bytes=True)
 ```
-    
-<<<<<<< HEAD
-# all feature 분석이 필요한 경우
-모든 음향 지표(Shimmer, Jitter, Formant Ratio 등)가 필요한 경우 prosody_analysis_all_feature 모듈을 사용합니다.
-
-```python
-from prosody_analysis_all_feature import ProsodyAnalyzer
-
-analyzer = ProsodyAnalyzer()
-result = analyzer.analyze("interview.mp4")
-```
-
-사용법은 `ProsodyAnalyzerLight`와 동일합니다.
-=======
->>>>>>> 2b3a46179dc681048728423e6b6c91364400b102
 
 # analyze메서드 반환형태 
 
@@ -121,21 +106,12 @@ result = analyzer.analyze("interview.mp4")
 
 | 프로퍼티 | 반환형 | 설명 |
 |---------|--------|------|
-<<<<<<< HEAD
 | `gender` | str | 자동 감지된 성별 ("Male" \| "Female") |
 | `mean_pitch` | float | 성별 감지 기준이 된 평균 피치 (Hz) |
 | `avg_band1` | float | F1 대역폭 (Hz) - 목소리 명료도/공명 |
 | `intensity_mean` | float | 평균 강도 (dB) |
 | `percent_unvoiced` | float | 무성음 비율 (0.0 ~ 1.0) |
 | `avg_dur_pause` | float | 평균 휴지 시간 (sec) |
-=======
-| **`avg_band1`** | float | F1 대역폭 (Hz) - 목소리 명료도/공명 |
-| **`intensity_mean`** | float | 평균 강도 (dB) |
-| **`percent_unvoiced`** | float | 무성음 비율 (0.0 ~ 1.0) |
-| **`avg_dur_pause`** | float | 평균 휴지 시간 (sec) |
-| `gender` | str | 자동 감지된 성별 ("Male" \| "Female") |
-| `mean_pitch` | float | 성별 감지 기준이 된 평균 피치 (Hz) |
->>>>>>> 2b3a46179dc681048728423e6b6c91364400b102
 | `scores` | dict | 분석 점수 딕셔너리 {"Overall": float, "RecommendedHiring": float} |
 
 ```python
@@ -154,10 +130,10 @@ else:
 음성/영상 파일을 분석하고 결과를 멤버변수에 저장합니다.
 
 **파라미터:**
-- `input_data`
--     (str): 분석할 미디어 파일 경로
--     (np.ndarray): 오디오 데이터 배열(float32권장)
-- `sampling_rate` (int): input_data가 numpy 배열일 때의 샘플링 레이트 (Default: 16000)
+- **`input_data`**
+    - `input_data:(str)`: 분석할 미디어 파일 경로
+    - `input_data:(np.ndarray)`: 오디오 데이터 배열(float32권장)
+- `sampling_rate:(int)` : input_data가 numpy 배열일 때의 샘플링 레이트 (Default: 16000)
 
 **반환값:**
 - `True`: 분석 성공
@@ -172,9 +148,9 @@ success = analyzer.analyze("interview.mp4")
 각 feature별 Z-score를 정규분포 그래프로 시각화합니다.
 
 **파라미터:**
-- `target_feature` (str, optional): 시각화할 특정 Feature 이름. None일 경우 전체 요약 그래프 반환.
-- `save_path` (str, optional): 이미지 저장 경로 (PNG)
-- `return_bytes` (bool): `True`면 PNG 바이트 반환, `False`면 Figure 객체 반환
+- `target_feature(str, optional)` : 시각화할 특정 Feature 이름. None일 경우 전체 요약 그래프 반환.
+- `save_path(str, optional)` : 이미지 저장 경로 (PNG)
+- `return_bytes(bool)` : `True`면 PNG 바이트 반환, `False`면 Figure 객체 반환
 
 **반환값:**
 - `return_bytes=False`: matplotlib `Figure` 객체
